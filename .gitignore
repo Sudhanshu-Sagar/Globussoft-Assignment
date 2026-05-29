@@ -1,0 +1,33 @@
+# Virtual Environments
+
+venv/
+.venv/
+
+# Python Cache
+
+**pycache**/
+*.pyc
+*.pyo
+*.pyd
+
+# Jupyter
+
+.ipynb_checkpoints/
+
+# IDE Files
+
+.vscode/
+.idea/
+
+# OS Files
+
+.DS_Store
+Thumbs.db
+
+# Runtime Uploads
+
+Task2/uploads/
+
+# Logs
+
+*.log

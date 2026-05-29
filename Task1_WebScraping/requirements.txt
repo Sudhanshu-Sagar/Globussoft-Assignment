@@ -1,0 +1,8 @@
+# Amazon.in Laptop Scraper — Dependencies
+# Install with:  pip install -r requirements.txt
+
+selenium>=4.20.0
+beautifulsoup4>=4.12.0
+pandas>=2.0.0
+lxml>=5.0.0
+webdriver-manager>=4.0.0   # optional: auto-downloads ChromeDriver
