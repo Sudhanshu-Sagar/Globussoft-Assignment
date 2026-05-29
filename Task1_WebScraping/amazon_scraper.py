@@ -72,10 +72,11 @@ SELECTORS = {
         "div.s-result-item[data-asin]",
     ],
     "title": [
-        "h2.a-size-mini span.a-text-normal",
-        "h2 span.a-text-normal",
-        "h2 a span",
-        "[data-cy='title-recipe'] span",
+    "h2 a span",
+    "h2 span",
+    "[data-cy='title-recipe'] h2 a span",
+    "[data-cy='title-recipe'] span",
+
     ],
     "price": [
         "span.a-price > span.a-offscreen",
@@ -223,7 +224,7 @@ def is_captcha_page(page_source: str) -> bool:
 
 def parse_page(page_source: str) -> list:
     """Parse one search-results page; return a list of product dicts."""
-    soup     = BeautifulSoup(page_source, "html.parser")
+    soup = BeautifulSoup(page_source, "html.parser")
     products = []
 
     # Try each card selector until we get results
@@ -237,26 +238,44 @@ def parse_page(page_source: str) -> list:
 
     for card in cards:
         asin = card.get("data-asin", "").strip()
-        if not asin:          # skip filler / banner / carousel cards
+
+        # Skip filler/banner cards
+        if not asin:
             continue
 
-        title   = first_match(card, SELECTORS["title"])
-        price   = first_match(card, SELECTORS["price"])
-        rating  = first_match(card, SELECTORS["rating"])
-        image   = extract_image(card)
+        # Extract title directly from product heading
+        title_tag = card.select_one("h2 a span")
+
+        if title_tag:
+            title = title_tag.get_text(strip=True)
+        else:
+            title = first_match(card, SELECTORS["title"])
+
+        # Skip invalid titles caused by sponsored labels
+        if title.lower() in [
+            "sponsored",
+            "sponsoredsponsored",
+            "ad",
+            "advertisement",
+        ]:
+            continue
+
+        price = first_match(card, SELECTORS["price"])
+        rating = first_match(card, SELECTORS["rating"])
+        image = extract_image(card)
         ad_type = is_sponsored(card)
 
-        # Keep only the numeric part of rating: "4.2 out of 5 stars" → "4.2"
+        # Keep only numeric part of rating
         if rating != "N/A":
-            parts  = rating.split()
+            parts = rating.split()
             rating = parts[0] if parts else rating
 
         products.append({
-            "ASIN":    asin,
-            "Title":   title,
-            "Price":   price,
-            "Rating":  rating,
-            "Image":   image,
+            "ASIN": asin,
+            "Title": title,
+            "Price": price,
+            "Rating": rating,
+            "Image": image,
             "Ad_Type": ad_type,
         })
 
